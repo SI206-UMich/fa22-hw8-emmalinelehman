@@ -5,37 +5,49 @@ import unittest
 
 
 def get_restaurant_data(db_filename):
-    '''
-    complete the get_restaurant_data(db_filename) function that accepts the filename of the database as a parameter, and returns a list of dictionaries.
-    In each dictionary, the key:value pairs should be the name of the restaurant, the category_id , building_id, and rating for each restaurant.
-    '''
-    list_of_restaurants = []
+    """
+    This function accepts the file name of a database as a parameter and returns a list of
+    dictionaries. Each dictionary will contain the information for one restaurant. 
+    The key:value pairs should be the name, category_id, building_id, and rating
+    of each restaurant in the database.
+    """
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
-    cur.execute('SELECT name, category_id, building_id, rating FROM Restaurants')
-    for row in cur:
-        list_of_restaurants.append({'name': row[0], 'category': row[1], 'building': row[2], 'rating': row[3]})
+    cur.execute("SELECT * FROM Restaurants")
+    list_of_restaurants = []
+    for row in cur.fetchall():
+        row_dict = {}
+        row_dict['name'] = row[1]
+        row_dict['category'] = row[2]
+        row_dict['building'] = row[3]
+        row_dict['rating'] = row[4]
+        list_of_restaurants.append(row_dict)
     conn.close()
     return list_of_restaurants
 
 
+
 def barchart_restaurant_categories(db_filename):
-    """
-    This function accepts a file name of a database as a parameter and returns a dictionary. The keys should be the
-    restaurant categories and the values should be the number of restaurants in each category. The function should
-    also create a bar chart with restaurant categories and the counts of each category.
-    """
+    '''
+    The barchart_restaurant_categories(db_filename) function that accepts the filename of the database as a parameter, and returns a dictionary.
+    The dictionary should have the category_id as the key and the number of restaurants in that category as the value.
+    This function should also create a bar graph that displays the names of the categories along the y-axis and the number of restaurants in each category along the x-axis.
+    '''
+    conn = sqlite3.connect(db_filename)
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
-    cur.execute('SELECT category_id, COUNT(category_id) FROM Restaurants GROUP BY category_id')
-    category_dict = {}
+    cur.execute("SELECT category_id, COUNT(category_id) FROM Restaurants GROUP BY category_id")
+    category_data = {}
     for row in cur:
-        category_dict[row[0]] = row[1]
+        category_data[row[0]] = row[1]
     conn.close()
-    plt.bar(range(len(category_dict)), list(category_dict.values()), align='center')
-    plt.xticks(range(len(category_dict)), list(category_dict.keys()))
+    #print(category_data)
+    plt.barh(list(category_data.keys()), list(category_data.values()))
+    plt.xlabel("Number of Restaurants")
+    plt.ylabel("Category")
     plt.show()
-    return category_dict
+    return category_data
+
 
 
 #EXTRA CREDIT
@@ -43,28 +55,30 @@ def highest_rated_category(db_filename):#Do this through DB as well
     """
     This function finds the average restaurant rating for each category and returns a tuple containing the
     category name of the highest rated restaurants and the average rating of the restaurants
-    in that category. This function should also create a bar chart that displays the categories along the y-axis
+    in that category. This function should also create a bar graph that displays the categories along the y-axis
     and their ratings along the x-axis in descending order (by rating).
     """
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
-    cur.execute('SELECT category_id, AVG(rating) FROM Restaurants GROUP BY category_id')
-    category_dict = {}
+    cur.execute("SELECT category_id, AVG(rating) FROM Restaurants GROUP BY category_id")
+    category_data = {}
     for row in cur:
-        category_dict[row[0]] = row[1]
+        category_data[row[0]] = row[1]
     conn.close()
-    plt.barh(range(len(category_dict)), list(category_dict.values()), align='center')
-    plt.yticks(range(len(category_dict)), list(category_dict.keys()))
+    #print(category_data)
+    plt.barh(list(category_data.keys()), list(category_data.values()))
+    plt.xlabel("Average Rating")
+    plt.ylabel("Category")
     plt.show()
-    return max(category_dict.items(), key=lambda x: x[1])
+    return max(category_data, key=category_data.get), category_data[max(category_data, key=category_data.get)]
+
+
 
 #Try calling your functions here
 def main():
     get_restaurant_data('South_U_Restaurants.db')
     barchart_restaurant_categories('South_U_Restaurants.db')
     highest_rated_category('South_U_Restaurants.db')
-    
-
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
