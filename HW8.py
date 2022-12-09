@@ -3,13 +3,21 @@ import os
 import sqlite3
 import unittest
 
+
 def get_restaurant_data(db_filename):
     """
-    This function accepts the file name of a database as a parameter and returns a list of
-    dictionaries. The key:value pairs should be the name, category, building, and rating
-    of each restaurant in the database.
-    """
-    pass
+    Complete the get_restaurant_data(db_filename) function that accepts the filename of the database as a parameter, and returns a list of dictionaries.
+    The key:value pairs should be the name, category, building, and rating for each restaurant.
+    """ 
+    res=[]
+    conn = sqlite3.connect(db_filename)
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM Restaurants')
+    for row in cur:
+        res.append({'name':row[0],'category':row[1],'building':row[2],'rating':row[3]})
+    conn.close()
+    return res
+
 
 def barchart_restaurant_categories(db_filename):
     """
@@ -31,7 +39,8 @@ def highest_rated_category(db_filename):#Do this through DB as well
 
 #Try calling your functions here
 def main():
-    pass
+    get_restaurant_data('South_U_Restaurants.db')
+
 
 class TestHW8(unittest.TestCase):
     def setUp(self):
