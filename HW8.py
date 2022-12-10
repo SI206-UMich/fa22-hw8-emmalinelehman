@@ -84,20 +84,32 @@ def highest_rated_category(db_filename):#Do this through DB as well
     in that category. This function should also create a bar graph that displays the categories along the y-axis
     and their ratings along the x-axis in descending order (by rating).
     """
-    conn = sqlite3.connect(db_filename)
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_filename)
     cur = conn.cursor()
-    cur.execute("SELECT category_id, AVG(rating) FROM Restaurants GROUP BY category_id")
-    category_data = {}
-    for row in cur:
-        category_data[row[0]] = row[1]
-    conn.close()
-    #print(category_data)
-    plt.barh(list(category_data.keys()), list(category_data.values()))
-    plt.xlabel("Average Rating")
-    plt.ylabel("Category")
+    cur.execute(
+        """
+        SELECT category, rating
+        FROM restaurants 
+        JOIN categories 
+        ON restaurants.category_id = categories.id 
+        GROUP BY category_id
+        ORDER BY rating ASC
+        """
+    )
+    data = cur.fetchall()
+    highest_dict = {}
+    for z in data:
+        highest_dict[z[0]] = highest_dict.get(z, 0) + z[1]
+    categories = list(highest_dict.keys())
+    high_vals = list(highest_dict.values())
+    plt.barh(categories, high_vals)
+    plt.ylabel("Categories")
+    plt.xlabel("Ratings")
+    plt.title("Average Restaurant Ratings by Category")
+    plt.tight_layout()
     plt.show()
-    return max(category_data, key=category_data.get), category_data[max(category_data, key=category_data.get)]
-
+    return data[-1]
 
 
 #Try calling your functions here
