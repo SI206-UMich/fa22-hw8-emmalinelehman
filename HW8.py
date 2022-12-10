@@ -28,12 +28,12 @@ def get_restaurant_data(db_filename):
     data = cur.fetchall()
     restaurant_information = []
     for i in data:
-        complete = {}
-        complete['name'] = i[0]
-        complete['category'] = i[1]
-        complete['building'] = i[2]
-        complete['rating'] = i[3]
-        restaurant_information.append(complete)
+        whole_stats = {}
+        whole_stats['name'] = i[0]
+        whole_stats['category'] = i[1]
+        whole_stats['building'] = i[2]
+        whole_stats['rating'] = i[3]
+        restaurant_information.append(whole_stats)
     return restaurant_information
 
 
