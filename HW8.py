@@ -8,22 +8,34 @@ def get_restaurant_data(db_filename):
     """
     This function accepts the file name of a database as a parameter and returns a list of
     dictionaries. Each dictionary will contain the information for one restaurant. 
-    The key:value pairs should be the name, category_id, building_id, and rating
-    of each restaurant in the database.
+    The keys should be the name, category, building, and rating of each restaurant in the database. The values should be the text and information for each restaurant.
     """
-    conn = sqlite3.connect(db_filename)
+    #Expected return value:[{‘name’: ‘M-36 Coffee Roasters Cafe’, ‘category’: ‘Cafe’, ‘building’: 1101, ‘rating’: 3.8}, . . . ]
+
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_filename)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM Restaurants")
-    list_of_restaurants = []
-    for row in cur.fetchall():
-        row_dict = {}
-        row_dict['name'] = row[1]
-        row_dict['category'] = row[2]
-        row_dict['building'] = row[3]
-        row_dict['rating'] = row[4]
-        list_of_restaurants.append(row_dict)
-    conn.close()
-    return list_of_restaurants
+    cur.execute(
+        """
+        SELECT name, category, building, rating 
+        FROM restaurants
+        JOIN categories
+        ON restaurants.category_id = categories.id
+        JOIN buildings
+        ON restaurants.building_id = buildings.id
+        """
+    )
+    data = cur.fetchall()
+    restaurant_information = []
+    for i in data:
+        complete = {}
+        complete['name'] = i[0]
+        complete['category'] = i[1]
+        complete['building'] = i[2]
+        complete['rating'] = i[3]
+        restaurant_information.append(complete)
+    return restaurant_information
+
 
 
 
@@ -33,20 +45,34 @@ def barchart_restaurant_categories(db_filename):
     The dictionary should have the category_id as the key and the number of restaurants in that category as the value.
     This function should also create a bar graph that displays the names of the categories along the y-axis and the number of restaurants in each category along the x-axis.
     '''
-    conn = sqlite3.connect(db_filename)
-    conn = sqlite3.connect(db_filename)
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_filename)
     cur = conn.cursor()
-    cur.execute("SELECT category_id, COUNT(category_id) FROM Restaurants GROUP BY category_id")
-    category_data = {}
-    for row in cur:
-        category_data[row[0]] = row[1]
-    conn.close()
-    #print(category_data)
-    plt.barh(list(category_data.keys()), list(category_data.values()))
+    cur.execute(
+        """
+        SELECT category, COUNT(category_id) 
+        FROM restaurants 
+        JOIN categories 
+        ON restaurants.category_id = categories.id 
+        GROUP BY category_id
+        ORDER BY COUNT(category_id) ASC
+        """
+    )
+    data = cur.fetchall()
+    category_dict = {}
+    for i in data:
+        category_dict[i[0]] = category_dict.get(i, 0) + i[1]
+
+    categories = list(category_dict.keys())
+    val_list = list(category_dict.values())
+    plt.barh(categories, val_list)
+    plt.ylabel("Restaurant Categories")
     plt.xlabel("Number of Restaurants")
-    plt.ylabel("Category")
+    plt.title("Types of Restaurants in S. University")
+    plt.tight_layout()
     plt.show()
-    return category_data
+    return category_dict
+
 
 
 
